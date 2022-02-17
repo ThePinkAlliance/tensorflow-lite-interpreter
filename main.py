@@ -1,15 +1,15 @@
 from turtle import width
 import cv2
+from cv2 import VideoCapture
 import tensorflow.lite as tflite
 import numpy as np
 import re
 
 from PIL import Image
 
-vid = cv2.VideoCapture(0)
 interpreter = tflite.Interpreter(model_path="./model.tflite")
 interpreter.allocate_tensors()
-DETECTION_THRESHOLD = 0.97
+DETECTION_THRESHOLD = 0.85
 
 input = interpreter.get_input_details()
 out = interpreter.get_output_details()
@@ -20,7 +20,11 @@ width = input_shape[2]
 
 input_index = input[0]['index']
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(cv2.CAP_DSHOW)
+
+cap.set(cv2.CAP_PROP_FPS, 30)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
 
 
 def load_labels(label_path):
@@ -61,7 +65,11 @@ def process_image(interpreter, img, in_index):
 
 
 while (True):
+
     ret, img = cap.read()
+
+    print(ret)
+
     if ret:
         image = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
         image = image.resize((height, width))
@@ -76,6 +84,6 @@ while (True):
     else:
         break
 
-cv2.release()
+cap.release()
 
 cv2.destroyAllWindows()
